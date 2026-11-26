@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#192e2a">
+<title>电文室 · HOI4 事件编辑器</title>
+<meta name="description" content="编写钢铁雄心 IV 事件、本地化和选项，实时预览游戏排版，复制或导出原始代码。">
+<link rel="icon" type="image/svg+xml" href="assets/nib.svg">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <button class="icon-button mobile-files" data-action="files" aria-label="打开事件文件" title="事件文件"><i data-icon="sidebar"></i></button>
+  <span class="brand-symbol"><i data-icon="feather" data-size="24"></i></span>
+  <h1>电文室</h1><span class="brand-rule"></span><span class="brand-product"><b>HOI4</b> 事件编辑器</span>
+  <div class="top-actions"><span class="save-state" id="save-state" role="status"><i data-icon="saved"></i><span>已保存到本地</span></span><span class="top-divider"></span>
+  <button class="manual-button" data-action="manual"><i data-icon="book"></i><span>语法手册</span></button></div>
+</header>
+<div class="workspace">
+  <aside class="sidebar" id="sidebar" aria-label="事件文件">
+    <div class="rail-title"><h2>事件文件</h2><span id="file-count"></span><button class="icon-button mobile-only" data-action="files" aria-label="关闭文件列表"><i data-icon="close"></i></button></div>
+    <button class="new-button" data-action="new"><i data-icon="plus"></i>新建事件</button>
+    <div class="folder-tools">
+      <button class="folder-row" data-action="folder" aria-expanded="true" aria-controls="filelist"><i data-icon="chevron" data-size="14"></i><i data-icon="folder" data-size="17"></i><span>events</span></button>
+      <button class="batch-toggle" id="batch-toggle" data-action="batch-toggle" aria-pressed="false" aria-controls="batch-panel"><i data-icon="download" data-size="14"></i><span>批量下载</span></button>
+    </div>
+    <div class="filelist" id="filelist"></div>
+    <div class="batch-panel" id="batch-panel" hidden>
+      <div class="batch-count"><label><input type="checkbox" id="select-all-events">全选</label><span id="selection-count" role="status"></span></div>
+      <label class="select-wrap batch-layout"><select id="batch-layout" aria-label="批量下载文件组织方式"><option value="merge">合并所选事件</option><option value="separate">每个事件单独成组</option></select><i data-icon="chevron" data-size="13"></i></label>
+      <button class="download-selection" id="download-selection" data-action="download-selection" aria-haspopup="dialog" disabled><i data-icon="download" data-size="15"></i>下载所选 TXT 和 YML</button>
+    </div>
+    <div class="rail-bottom"><button class="rail-action" data-action="backup"><i data-icon="drive"></i>工作区备份</button>
+    <a class="rail-action" href="https://hoi4.paradoxwikis.com/Event_modding" target="_blank" rel="noreferrer"><i data-icon="book"></i>HOI4 Wiki<i class="renote" data-icon="external" data-size="13"></i></a></div>
+  </aside>
+  <button class="rail-shade" data-action="files" aria-label="收起事件文件"></button>
+  <main class="studio">
+    <div class="tabbar"><div id="tabs" role="tablist" aria-label="打开的事件"></div><button class="tab-plus icon-button" data-action="new" title="新建事件" aria-label="新建事件标签"><i data-icon="plus" data-size="17"></i></button></div>
+    <div class="mobile-switch"><button data-action="showedit" class="chosen"><i data-icon="edit" data-size="16"></i>编辑</button><button data-action="showpreview"><i data-icon="monitor" data-size="16"></i>游戏预览</button></div>
+    <div class="panes" id="panes">
+      <section class="editor-pane" aria-label="事件编辑">
+        <div class="pane-head"><h2><i data-icon="edit"></i>事件编辑</h2><div class="segmented" id="mode-switch"><button data-action="rich" class="selected" aria-pressed="true">可视化</button><button data-action="source" aria-pressed="false">源码</button></div></div>
+        <div id="edit-scroll" class="edit-scroll"><div id="editor"></div></div>
+        <div class="editor-actions"><button class="text-action" data-action="settings"><i data-icon="settings" data-size="16"></i>预览设置</button><button class="primary" data-action="export"><i data-icon="copy" data-size="16"></i>复制代码</button></div>
+      </section>
+      <section class="preview-pane" aria-label="游戏预览">
+        <div class="pane-head preview-head"><h2><i data-icon="monitor"></i>游戏预览</h2><span class="live-status"><span></span>实时</span><div class="zoom"><select id="zoom" title="预览缩放" aria-label="预览缩放"><option value="0.75">75%</option><option value="0.85">85%</option><option value="1" selected>100%</option><option value="1.15">115%</option><option value="1.3">130%</option></select><i data-icon="chevron" data-size="12"></i></div><button class="icon-button" data-action="expand" id="expand" aria-label="展开预览" title="展开预览"><i data-icon="expand" data-size="16"></i></button></div>
+        <div class="canvas-bar">
+          <label class="recipient" for="recipient-tag">接收国 <input id="recipient-tag" value="FRA" maxlength="3" list="preview-countries" autocomplete="off" spellcheck="false" title="输入三位国家标签，用于判断选项条件"></label>
+          <datalist id="preview-countries"><option value="FRA">法国</option><option value="GER">德国</option><option value="ENG">英国</option><option value="ITA">意大利</option><option value="GRE">希腊</option><option value="CHI">中国</option><option value="YUN">云南</option><option value="SOV">苏联</option><option value="USA">美国</option></datalist>
+          <label class="original-choice" hidden><input id="original-recipient" type="checkbox">初始接收国</label>
+          <div class="canvas-actions"><button class="canvas-tool" id="pan-toggle" type="button" aria-pressed="false" title="抓手模式：拖动任意位置。也可按住空格或鼠标中键拖动。"><i data-icon="hand" data-size="15"></i><span>抓手</span></button><button class="canvas-tool" id="reset-view" type="button" title="画布居中并恢复 100% 缩放"><i data-icon="center" data-size="15"></i><span>复位</span></button></div>
+        </div>
+        <div class="stage" id="stage" tabindex="0" aria-label="预览画布，可拖动空白处、插图或使用抓手"><div class="stage-marks" aria-hidden="true"><b></b><b></b><b></b><b></b></div><div class="paper-space" id="paper-space"><article id="paper" class="event-paper news"></article><div class="paper-meta" id="paper-meta"></div><div class="preview-note" id="preview-note" role="status" hidden></div></div></div>
+      </section>
+    </div>
+    <div id="empty-workspace" hidden><div class="empty-icon"><i data-icon="file" data-size="34"></i></div><h2>打开或新建一个事件</h2><p>从事件文件列表打开已有文稿，继续编辑。</p><button class="primary" data-action="new"><i data-icon="plus"></i>新建事件</button><button class="text-action showfiles-empty" data-action="files">事件文件</button></div>
+  </main>
+</div>
+<footer class="statusbar"><span><i data-icon="drive" data-size="14"></i>本地工作区</span><span class="footer-split"></span><span id="status-file">—</span><span class="status-spacer"></span><span>简体中文</span><span class="footer-split"></span><span class="mono">UTF-8 BOM</span></footer>
+<dialog id="modal"><div id="modal-content"></div></dialog><div id="popover" class="popover" hidden></div><div class="toast" role="status" id="toast" hidden></div>
+<input type="file" id="restore-input" accept=".json,application/json" hidden>
+<script type="module" src="app.mjs"></script>
+</body></html>
